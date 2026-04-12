@@ -1,0 +1,598 @@
+<!doctype html>
+<html lang="vi" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="/_sdk/data_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&amp;family=Fredoka+One&amp;display=swap" rel="stylesheet">
+  <style>
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+@keyframes pulse-glow { 0%,100%{box-shadow:0 0 20px rgba(34,197,94,0.3)} 50%{box-shadow:0 0 40px rgba(34,197,94,0.6)} }
+@keyframes slide-up { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+@keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
+@keyframes confetti-fall { 0%{transform:translateY(-100%) rotate(0deg);opacity:1} 100%{transform:translateY(100%) rotate(720deg);opacity:0} }
+@keyframes xp-pop { 0%{transform:scale(0) translateY(0);opacity:0} 50%{transform:scale(1.3) translateY(-20px);opacity:1} 100%{transform:scale(1) translateY(-40px);opacity:0} }
+@keyframes dna-spin { 0%{transform:rotateY(0deg)} 100%{transform:rotateY(360deg)} }
+
+.float-anim { animation: float 3s ease-in-out infinite; }
+.slide-up { animation: slide-up 0.5s ease-out forwards; }
+.shake { animation: shake 0.4s ease-in-out; }
+.xp-pop { animation: xp-pop 1s ease-out forwards; }
+.pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+.dna-spin { animation: dna-spin 4s linear infinite; }
+
+.chapter-card { transition: all 0.3s cubic-bezier(0.4,0,0.2,1); }
+.chapter-card:hover { transform: translateY(-6px) scale(1.02); }
+
+.option-btn { transition: all 0.2s ease; }
+.option-btn:hover:not(:disabled) { transform: translateX(6px); }
+.option-btn.correct { background: linear-gradient(135deg, #059669, #10b981) !important; color: white !important; }
+.option-btn.wrong { background: linear-gradient(135deg, #dc2626, #ef4444) !important; color: white !important; }
+
+.progress-fill { transition: width 0.8s cubic-bezier(0.4,0,0.2,1); }
+
+.cell-bg {
+  background: radial-gradient(ellipse at 30% 30%, rgba(134,239,172,0.15) 0%, transparent 50%),
+              radial-gradient(ellipse at 70% 60%, rgba(59,130,246,0.1) 0%, transparent 50%);
+}
+
+.toast { animation: slide-up 0.3s ease-out; }
+
+body::-webkit-scrollbar { width: 6px; }
+body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
+</style>
+  <style>body { box-sizing: border-box; }</style>
+ </head>
+ <body class="h-full overflow-auto" style="font-family:'Nunito',sans-serif;">
+  <div id="app" class="w-full h-full"></div>
+  <script>
+// ========== GAME DATA ==========
+const CHAPTERS = [
+  {
+    id: 'ch1', title: 'Di truyền & Biến dị', icon: '🧬', desc: 'Khám phá bí mật của ADN',
+    color: '#059669', questions: [
+      { q: 'Gen là gì?', opts: ['Một đoạn ADN mang thông tin mã hóa cho một sản phẩm xác định','Một loại protein','Một bào quan','Một loại ARN'], correct: 0, explain: 'Gen là một đoạn ADN mang thông tin mã hóa cho một chuỗi polypeptide hoặc ARN.' },
+      { q: 'ADN có cấu trúc gì?', opts: ['Xoắn kép','Xoắn đơn','Thẳng','Vòng'], correct: 0, explain: 'ADN có cấu trúc xoắn kép gồm 2 mạch polynucleotide quấn quanh nhau.' },
+      { q: 'Nguyên tắc bổ sung trong ADN là?', opts: ['A-T, G-X','A-G, T-X','A-X, G-T','A-U, G-X'], correct: 0, explain: 'Trong ADN: Adenin liên kết với Timin, Guanin liên kết với Xitozin.' },
+      { q: 'Quá trình nhân đôi ADN diễn ra ở đâu?', opts: ['Nhân tế bào','Ribosome','Lưới nội chất','Bộ máy Golgi'], correct: 0, explain: 'Nhân đôi ADN xảy ra trong nhân tế bào, tại các nhiễm sắc thể.' },
+      { q: 'Đơn phân của ADN là?', opts: ['Nucleotide','Amino acid','Glucose','Nucleosome'], correct: 0, explain: 'ADN được cấu tạo từ các đơn phân nucleotide gồm đường, phosphate và base nitơ.' },
+    ]
+  },
+  {
+    id: 'ch2', title: 'Nhiễm sắc thể', icon: '🔬', desc: 'Cấu trúc & chức năng NST',
+    color: '#2563eb', questions: [
+      { q: 'Người có bao nhiêu cặp NST?', opts: ['23 cặp','22 cặp','24 cặp','46 cặp'], correct: 0, explain: 'Người có 23 cặp NST = 46 NST, gồm 22 cặp NST thường và 1 cặp NST giới tính.' },
+      { q: 'NST giới tính ở nữ là?', opts: ['XX','XY','XO','XXY'], correct: 0, explain: 'Nữ giới có cặp NST giới tính XX, nam giới có XY.' },
+      { q: 'Nguyên phân tạo ra bao nhiêu tế bào con?', opts: ['2 tế bào','4 tế bào','1 tế bào','8 tế bào'], correct: 0, explain: 'Nguyên phân từ 1 tế bào mẹ tạo 2 tế bào con có bộ NST giống tế bào mẹ.' },
+      { q: 'Giảm phân tạo ra bao nhiêu tế bào con?', opts: ['4 tế bào','2 tế bào','1 tế bào','8 tế bào'], correct: 0, explain: 'Giảm phân tạo 4 tế bào con có bộ NST giảm đi một nửa (đơn bội).' },
+      { q: 'Đột biến số lượng NST gây hội chứng Down là?', opts: ['Thừa 1 NST số 21','Thiếu 1 NST số 21','Thừa 1 NST X','Thiếu 1 NST Y'], correct: 0, explain: 'Hội chứng Down do thừa 1 NST số 21 (3 NST số 21 thay vì 2).' },
+    ]
+  },
+  {
+    id: 'ch3', title: 'Quy luật di truyền', icon: '🌱', desc: 'Mendel & các quy luật',
+    color: '#d97706', questions: [
+      { q: 'Mendel được gọi là gì?', opts: ['Cha đẻ di truyền học','Cha đẻ sinh học','Cha đẻ tiến hóa','Cha đẻ sinh thái'], correct: 0, explain: 'Gregor Mendel được xem là cha đẻ của di truyền học nhờ thí nghiệm trên đậu Hà Lan.' },
+      { q: 'Tính trạng trội là?', opts: ['Biểu hiện ở F1','Biến mất ở F1','Chỉ có ở P','Chỉ có ở F2'], correct: 0, explain: 'Tính trạng trội biểu hiện ở F1 khi lai hai bố mẹ thuần chủng khác nhau.' },
+      { q: 'Tỉ lệ phân li kiểu hình ở F2 trong phép lai một tính trạng?', opts: ['3:1','1:1','9:3:3:1','1:2:1'], correct: 0, explain: 'F2 có tỉ lệ 3 trội : 1 lặn trong phép lai một cặp tính trạng tương phản.' },
+      { q: 'Kiểu gen Aa được gọi là?', opts: ['Dị hợp','Đồng hợp trội','Đồng hợp lặn','Thuần chủng'], correct: 0, explain: 'Aa là kiểu gen dị hợp vì có 2 alen khác nhau.' },
+      { q: 'Phép lai phân tích là?', opts: ['Lai với cá thể mang kiểu gen lặn','Lai với F1','Lai nghịch','Tự thụ phấn'], correct: 0, explain: 'Phép lai phân tích: lai cá thể cần xác định kiểu gen với cá thể đồng hợp lặn (aa).' },
+    ]
+  },
+  {
+    id: 'ch4', title: 'Tiến hóa', icon: '🦎', desc: 'Nguồn gốc sự sống',
+    color: '#7c3aed', questions: [
+      { q: 'Ai đề xuất thuyết tiến hóa bằng chọn lọc tự nhiên?', opts: ['Darwin','Mendel','Lamarck','Pasteur'], correct: 0, explain: 'Charles Darwin đề xuất thuyết tiến hóa qua chọn lọc tự nhiên năm 1859.' },
+      { q: 'Chọn lọc tự nhiên tác động lên?', opts: ['Kiểu hình','Kiểu gen','ADN','ARN'], correct: 0, explain: 'Chọn lọc tự nhiên tác động trực tiếp lên kiểu hình của sinh vật.' },
+      { q: 'Cơ quan thoái hóa chứng tỏ điều gì?', opts: ['Nguồn gốc chung','Đột biến','Biến dị tổ hợp','Chọn lọc nhân tạo'], correct: 0, explain: 'Cơ quan thoái hóa là bằng chứng về nguồn gốc chung của các loài.' },
+      { q: 'Hóa thạch là gì?', opts: ['Di tích sinh vật cổ được bảo tồn','Đá quý','Khoáng sản','Sinh vật sống'], correct: 0, explain: 'Hóa thạch là di tích/dấu vết của sinh vật sống trong các thời kỳ trước.' },
+      { q: 'Loài người thuộc bộ nào?', opts: ['Bộ Linh trưởng','Bộ Ăn thịt','Bộ Gặm nhấm','Bộ Guốc chẵn'], correct: 0, explain: 'Loài người (Homo sapiens) thuộc bộ Linh trưởng (Primates).' },
+    ]
+  },
+  {
+    id: 'ch5', title: 'Sinh thái học', icon: '🌍', desc: 'Hệ sinh thái & môi trường',
+    color: '#0891b2', questions: [
+      { q: 'Quần thể là gì?', opts: ['Tập hợp cá thể cùng loài, cùng khu vực','Tập hợp nhiều loài','Một hệ sinh thái','Một cá thể'], correct: 0, explain: 'Quần thể gồm các cá thể cùng loài, sống trong một khu vực, ở một thời điểm.' },
+      { q: 'Chuỗi thức ăn bắt đầu từ?', opts: ['Sinh vật sản xuất','Sinh vật tiêu thụ','Sinh vật phân giải','Động vật ăn thịt'], correct: 0, explain: 'Chuỗi thức ăn luôn bắt đầu từ sinh vật sản xuất (thực vật, tảo).' },
+      { q: 'Nhân tố sinh thái vô sinh là?', opts: ['Ánh sáng, nhiệt độ, nước','Vi khuẩn','Thực vật','Động vật'], correct: 0, explain: 'Nhân tố vô sinh gồm ánh sáng, nhiệt độ, độ ẩm, nước, đất, không khí.' },
+      { q: 'Quan hệ cộng sinh là?', opts: ['Hai loài cùng có lợi','Một loài có lợi, một bị hại','Cạnh tranh','Ký sinh'], correct: 0, explain: 'Cộng sinh: hai loài sống chung, cả hai đều có lợi (VD: nấm và tảo tạo địa y).' },
+      { q: 'Ô nhiễm môi trường chủ yếu do?', opts: ['Hoạt động con người','Thiên tai','Núi lửa','Động đất'], correct: 0, explain: 'Hoạt động sản xuất, sinh hoạt của con người là nguyên nhân chính gây ô nhiễm.' },
+    ]
+  }
+];
+
+// ========== SHUFFLE QUESTION OPTIONS ==========
+function shuffleQuestion(q) {
+  const correctAnswer = q.opts[q.correct];
+  const shuffled = [...q.opts].sort(() => Math.random() - 0.5);
+  const newCorrectIdx = shuffled.indexOf(correctAnswer);
+  return { ...q, opts: shuffled, correct: newCorrectIdx };
+}
+
+const XP_PER_CORRECT = 20;
+const XP_PER_STREAK_BONUS = 5;
+const LEVELS = [0,100,250,500,800,1200,1800,2500,3500,5000];
+const RANKS = ['🌱 Mầm non','🌿 Nhà sinh học nhỏ','🍀 Thám hiểm viên','🌳 Nhà nghiên cứu','🔬 Tiến sĩ sinh học','🧬 Giáo sư','🏆 Viện sĩ','👑 Bậc thầy','⭐ Huyền thoại','💎 Thiên tài'];
+
+// ========== STATE ==========
+let playerData = null;
+let allRecords = [];
+let currentView = 'home'; // home, chapters, quiz, results, profile
+let currentChapter = null;
+let quizState = null;
+let toastTimeout = null;
+
+// ========== DEFAULT CONFIG ==========
+const defaultConfig = {
+  game_title: 'Sinh Học 9 Adventure',
+  welcome_text: 'Chào mừng nhà khoa học trẻ!',
+  background_color: '#0f172a',
+  surface_color: '#1e293b',
+  text_color: '#f1f5f9',
+  primary_color: '#22c55e',
+  accent_color: '#3b82f6'
+};
+
+let config = { ...defaultConfig };
+
+// ========== HELPERS ==========
+function getLevel(xp) {
+  for (let i = LEVELS.length - 1; i >= 0; i--) { if (xp >= LEVELS[i]) return i; }
+  return 0;
+}
+function getXpProgress(xp) {
+  const lvl = getLevel(xp);
+  if (lvl >= LEVELS.length - 1) return 100;
+  const curr = xp - LEVELS[lvl];
+  const needed = LEVELS[lvl + 1] - LEVELS[lvl];
+  return Math.round((curr / needed) * 100);
+}
+function getCompletedChapters() {
+  if (!playerData) return [];
+  try { return JSON.parse(playerData.chapters_completed || '[]'); } catch { return []; }
+}
+
+function showToast(msg, type = 'success') {
+  let t = document.getElementById('toast-container');
+  if (!t) { t = document.createElement('div'); t.id = 'toast-container'; t.className = 'fixed top-4 right-4 z-50'; document.body.appendChild(t); }
+  const el = document.createElement('div');
+  const bg = type === 'success' ? config.primary_color : type === 'error' ? '#ef4444' : config.accent_color;
+  el.className = 'toast rounded-xl px-5 py-3 mb-2 text-white font-bold shadow-2xl';
+  el.style.background = bg;
+  el.textContent = msg;
+  t.appendChild(el);
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => el.remove(), 2500);
+}
+
+// ========== RENDER ENGINE ==========
+function render() {
+  const app = document.getElementById('app');
+  app.style.background = config.background_color;
+  app.style.color = config.text_color;
+  app.className = 'w-full h-full overflow-auto';
+
+  switch (currentView) {
+    case 'home': renderHome(app); break;
+    case 'chapters': renderChapters(app); break;
+    case 'quiz': renderQuiz(app); break;
+    case 'results': renderResults(app); break;
+    case 'profile': renderProfile(app); break;
+  }
+  lucide.createIcons();
+}
+
+// ========== HOME SCREEN ==========
+function renderHome(app) {
+  const hasPlayer = playerData !== null;
+  app.innerHTML = `
+    <div class="min-h-full flex flex-col items-center justify-center p-6 cell-bg relative">
+      <!-- Decorative DNA -->
+      <div class="absolute top-8 right-8 text-6xl opacity-20 dna-spin">🧬</div>
+      <div class="absolute bottom-12 left-8 text-4xl opacity-15 float-anim" style="animation-delay:1s">🔬</div>
+      <div class="absolute top-20 left-12 text-3xl opacity-10 float-anim" style="animation-delay:2s">🌿</div>
+
+      <div class="text-center slide-up max-w-lg w-full">
+        <div class="text-7xl mb-4 float-anim">🧬</div>
+        <h1 id="main-title" class="text-4xl md:text-5xl font-black mb-3 leading-tight" style="font-family:'Fredoka One',cursive; color:${config.primary_color}">
+          ${config.game_title}
+        </h1>
+        <p id="welcome-msg" class="text-lg opacity-80 mb-8">${config.welcome_text}</p>
+
+        ${hasPlayer ? `
+          <div class="rounded-2xl p-6 mb-6 text-center" style="background:${config.surface_color}">
+            <p class="text-sm opacity-60 mb-1">Chào lại, nhà khoa học!</p>
+            <p class="text-2xl font-black" style="color:${config.primary_color}">${playerData.player_name}</p>
+            <p class="text-sm mt-1">${RANKS[getLevel(playerData.total_xp)]} • Level ${getLevel(playerData.total_xp)}</p>
+            <div class="mt-3 rounded-full h-3 overflow-hidden" style="background:${config.background_color}">
+              <div class="h-full rounded-full progress-fill" style="width:${getXpProgress(playerData.total_xp)}%;background:${config.primary_color}"></div>
+            </div>
+            <p class="text-xs opacity-50 mt-1">${playerData.total_xp} XP</p>
+          </div>
+          <button onclick="currentView='chapters';render()" class="w-full py-4 rounded-2xl font-black text-xl text-white pulse-glow transition-all hover:scale-105" style="background:${config.primary_color}">
+            <i data-lucide="play" class="inline w-6 h-6 mr-2 align-middle"></i>Tiếp tục học
+          </button>
+          <button onclick="currentView='profile';render()" class="w-full mt-3 py-3 rounded-2xl font-bold transition-all hover:scale-105 border-2" style="border-color:${config.accent_color};color:${config.accent_color}">
+            <i data-lucide="user" class="inline w-5 h-5 mr-2 align-middle"></i>Hồ sơ
+          </button>
+        ` : `
+          <div class="rounded-2xl p-6 mb-6" style="background:${config.surface_color}">
+            <label for="player-name" class="block text-sm font-bold mb-2 opacity-70">Nhập tên của bạn</label>
+            <input id="player-name" type="text" maxlength="20" placeholder="VD: Minh Anh" class="w-full px-4 py-3 rounded-xl text-lg font-bold outline-none transition-all focus:ring-2" style="background:${config.background_color};color:${config.text_color};--tw-ring-color:${config.primary_color}">
+          </div>
+          <button onclick="startGame()" class="w-full py-4 rounded-2xl font-black text-xl text-white pulse-glow transition-all hover:scale-105" style="background:${config.primary_color}">
+            🚀 Bắt đầu phiêu lưu!
+          </button>
+        `}
+      </div>
+    </div>
+  `;
+}
+
+async function startGame() {
+  const input = document.getElementById('player-name');
+  const name = (input?.value || '').trim();
+  if (!name) { input?.classList.add('shake'); setTimeout(() => input?.classList.remove('shake'), 500); showToast('Hãy nhập tên bạn nhé!', 'error'); return; }
+  if (allRecords.length >= 999) { showToast('Đã đạt giới hạn lưu trữ!', 'error'); return; }
+
+  const btn = input.closest('.slide-up').querySelector('button');
+  btn.disabled = true; btn.textContent = 'Đang tạo...';
+
+  const result = await window.dataSdk.create({
+    player_name: name, total_xp: 0, level: 0, streak: 0,
+    last_played: new Date().toISOString(), chapters_completed: '[]', high_score: 0
+  });
+
+  if (result.isOk) {
+    showToast(`Chào mừng ${name}! 🎉`);
+  } else {
+    btn.disabled = false; btn.textContent = '🚀 Bắt đầu phiêu lưu!';
+    showToast('Có lỗi xảy ra, thử lại nhé!', 'error');
+  }
+}
+
+// ========== CHAPTERS ==========
+function renderChapters(app) {
+  const completed = getCompletedChapters();
+  app.innerHTML = `
+    <div class="min-h-full p-4 md:p-8">
+      <header class="flex items-center justify-between mb-6">
+        <button onclick="currentView='home';render()" class="p-2 rounded-xl transition hover:opacity-70"><i data-lucide="arrow-left" class="w-6 h-6"></i></button>
+        <div class="text-center">
+          <h2 class="text-xl font-black" style="font-family:'Fredoka One',cursive;color:${config.primary_color}">Chương trình học</h2>
+          <p class="text-xs opacity-50">${completed.length}/${CHAPTERS.length} hoàn thành</p>
+        </div>
+        <button onclick="currentView='profile';render()" class="p-2 rounded-xl transition hover:opacity-70"><i data-lucide="trophy" class="w-6 h-6" style="color:${config.primary_color}"></i></button>
+      </header>
+
+      <!-- XP Bar -->
+      <div class="rounded-2xl p-4 mb-6 flex items-center gap-4" style="background:${config.surface_color}">
+        <div class="text-3xl">${RANKS[getLevel(playerData?.total_xp || 0)].split(' ')[0]}</div>
+        <div class="flex-1">
+          <div class="flex justify-between text-sm mb-1">
+            <span class="font-bold">Level ${getLevel(playerData?.total_xp || 0)}</span>
+            <span class="opacity-60">${playerData?.total_xp || 0} XP</span>
+          </div>
+          <div class="rounded-full h-3 overflow-hidden" style="background:${config.background_color}">
+            <div class="h-full rounded-full progress-fill" style="width:${getXpProgress(playerData?.total_xp || 0)}%;background:linear-gradient(90deg,${config.primary_color},${config.accent_color})"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid gap-4">
+        ${CHAPTERS.map((ch, i) => {
+          const done = completed.includes(ch.id);
+          const locked = i > 0 && !completed.includes(CHAPTERS[i-1].id) && !done;
+          return `
+          <div class="chapter-card rounded-2xl p-5 cursor-pointer relative overflow-hidden ${locked ? 'opacity-50' : ''}"
+               style="background:${config.surface_color};border-left:4px solid ${ch.color}"
+               onclick="${locked ? '' : `startQuiz('${ch.id}')`}">
+            <div class="flex items-center gap-4">
+              <div class="text-4xl ${done ? '' : 'float-anim'}" style="animation-delay:${i*0.2}s">${locked ? '🔒' : ch.icon}</div>
+              <div class="flex-1">
+                <h3 class="font-black text-lg">${ch.title}</h3>
+                <p class="text-sm opacity-60">${ch.desc}</p>
+                <div class="flex items-center gap-2 mt-1">
+                  <span class="text-xs px-2 py-0.5 rounded-full font-bold" style="background:${ch.color}20;color:${ch.color}">${ch.questions.length} câu hỏi</span>
+                  ${done ? `<span class="text-xs px-2 py-0.5 rounded-full font-bold" style="background:${config.primary_color}20;color:${config.primary_color}">✅ Hoàn thành</span>` : ''}
+                </div>
+              </div>
+              ${!locked ? `<i data-lucide="chevron-right" class="w-6 h-6 opacity-40"></i>` : ''}
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function startQuiz(chId) {
+  currentChapter = CHAPTERS.find(c => c.id === chId);
+  if (!currentChapter) return;
+  // Shuffle questions and their options
+  const shuffled = [...currentChapter.questions]
+    .sort(() => Math.random() - 0.5)
+    .map(q => shuffleQuestion(q));
+  quizState = { questions: shuffled, current: 0, score: 0, streak: 0, answers: [], xpEarned: 0, answered: false };
+  currentView = 'quiz';
+  render();
+}
+
+// ========== QUIZ ==========
+function renderQuiz(app) {
+  if (!quizState || !currentChapter) return;
+  const qs = quizState.questions;
+  const qi = quizState.current;
+  const q = qs[qi];
+  const progress = ((qi) / qs.length) * 100;
+
+  app.innerHTML = `
+    <div class="min-h-full p-4 md:p-8 flex flex-col">
+      <!-- Header -->
+      <div class="flex items-center justify-between mb-4">
+        <button onclick="if(!quizState.answered){currentView='chapters';render()}" class="p-2 rounded-xl hover:opacity-70"><i data-lucide="x" class="w-5 h-5"></i></button>
+        <div class="flex items-center gap-2">
+          <span class="text-2xl">${currentChapter.icon}</span>
+          <span class="font-bold text-sm">${qi + 1}/${qs.length}</span>
+        </div>
+        <div class="flex items-center gap-1">
+          <span class="text-lg">🔥</span>
+          <span class="font-black" style="color:${config.primary_color}">${quizState.streak}</span>
+        </div>
+      </div>
+
+      <!-- Progress -->
+      <div class="rounded-full h-2 mb-6 overflow-hidden" style="background:${config.surface_color}">
+        <div class="h-full rounded-full progress-fill" style="width:${progress}%;background:linear-gradient(90deg,${currentChapter.color},${config.primary_color})"></div>
+      </div>
+
+      <!-- Question -->
+      <div class="flex-1 flex flex-col justify-center max-w-2xl mx-auto w-full">
+        <div class="slide-up rounded-2xl p-6 mb-6" style="background:${config.surface_color}">
+          <p class="text-xs font-bold opacity-40 mb-2">CÂU HỎI ${qi + 1}</p>
+          <h2 class="text-xl md:text-2xl font-black leading-snug">${q.q}</h2>
+        </div>
+
+        <div class="space-y-3 slide-up" style="animation-delay:0.15s" id="options-container">
+          ${q.opts.map((opt, oi) => {
+            let cls = '';
+            if (quizState.answered) {
+              if (oi === q.correct) cls = 'correct';
+              else if (quizState.answers[qi] === oi && oi !== q.correct) cls = 'wrong';
+            }
+            return `
+            <button onclick="selectAnswer(${oi})" class="option-btn w-full text-left px-5 py-4 rounded-xl font-bold flex items-center gap-3 ${cls}" 
+                    style="background:${config.surface_color};border:2px solid ${quizState.answered && oi === q.correct ? config.primary_color : 'transparent'}"
+                    ${quizState.answered ? 'disabled' : ''}>
+              <span class="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-black flex-shrink-0" style="background:${config.background_color}">${'ABCD'[oi]}</span>
+              <span>${opt}</span>
+            </button>`;
+          }).join('')}
+        </div>
+
+        <!-- Explanation -->
+        ${quizState.answered ? `
+        <div class="mt-4 rounded-xl p-4 slide-up" style="background:${quizState.answers[qi] === q.correct ? config.primary_color : '#ef4444'}22;border:1px solid ${quizState.answers[qi] === q.correct ? config.primary_color : '#ef4444'}44">
+          <p class="font-bold text-sm mb-1">${quizState.answers[qi] === q.correct ? '✅ Chính xác!' : '❌ Chưa đúng rồi!'}</p>
+          <p class="text-sm opacity-80">${q.explain}</p>
+        </div>
+        <button onclick="nextQuestion()" class="mt-4 w-full py-4 rounded-2xl font-black text-lg text-white transition hover:scale-105" style="background:${config.primary_color}">
+          ${qi < qs.length - 1 ? 'Câu tiếp theo →' : '🎉 Xem kết quả'}
+        </button>
+        ` : ''}
+      </div>
+    </div>
+  `;
+}
+
+function selectAnswer(idx) {
+  if (quizState.answered) return;
+  const q = quizState.questions[quizState.current];
+  quizState.answered = true;
+  quizState.answers[quizState.current] = idx;
+
+  if (idx === q.correct) {
+    quizState.score++;
+    quizState.streak++;
+    const bonus = Math.floor(quizState.streak / 3) * XP_PER_STREAK_BONUS;
+    quizState.xpEarned += XP_PER_CORRECT + bonus;
+  } else {
+    quizState.streak = 0;
+  }
+  render();
+}
+
+function nextQuestion() {
+  if (quizState.current < quizState.questions.length - 1) {
+    quizState.current++;
+    quizState.answered = false;
+    render();
+  } else {
+    currentView = 'results';
+    saveProgress();
+    render();
+  }
+}
+
+async function saveProgress() {
+  if (!playerData) return;
+  const completed = getCompletedChapters();
+  const passed = quizState.score >= Math.ceil(quizState.questions.length * 0.6);
+  if (passed && !completed.includes(currentChapter.id)) completed.push(currentChapter.id);
+
+  const newXp = (playerData.total_xp || 0) + quizState.xpEarned;
+  const newHighScore = Math.max(playerData.high_score || 0, quizState.score);
+
+  const updated = { ...playerData, total_xp: newXp, level: getLevel(newXp), streak: quizState.streak,
+    last_played: new Date().toISOString(), chapters_completed: JSON.stringify(completed), high_score: newHighScore };
+
+  const result = await window.dataSdk.update(updated);
+  if (!result.isOk) showToast('Lưu tiến trình thất bại', 'error');
+}
+
+// ========== RESULTS ==========
+function renderResults(app) {
+  if (!quizState || !currentChapter) return;
+  const total = quizState.questions.length;
+  const pct = Math.round((quizState.score / total) * 100);
+  const passed = pct >= 60;
+  const stars = pct >= 90 ? 3 : pct >= 70 ? 2 : pct >= 60 ? 1 : 0;
+
+  app.innerHTML = `
+    <div class="min-h-full flex flex-col items-center justify-center p-6 text-center cell-bg">
+      <div class="slide-up max-w-md w-full">
+        <div class="text-6xl mb-4">${passed ? '🎉' : '💪'}</div>
+        <h1 class="text-3xl font-black mb-2" style="font-family:'Fredoka One',cursive;color:${passed ? config.primary_color : '#ef4444'}">
+          ${passed ? 'Xuất sắc!' : 'Cố gắng thêm nhé!'}
+        </h1>
+        <p class="opacity-60 mb-6">${currentChapter.title}</p>
+
+        <!-- Score Card -->
+        <div class="rounded-2xl p-6 mb-6" style="background:${config.surface_color}">
+          <div class="text-5xl font-black mb-2" style="color:${config.primary_color}">${pct}%</div>
+          <p class="opacity-60">${quizState.score}/${total} câu đúng</p>
+          <div class="flex justify-center gap-1 mt-3 text-3xl">
+            ${[1,2,3].map(s => `<span ${s <= stars ? '' : 'class="opacity-20"'}>⭐</span>`).join('')}
+          </div>
+        </div>
+
+        <!-- XP Earned -->
+        <div class="rounded-xl p-4 mb-6 flex items-center justify-center gap-3" style="background:${config.primary_color}15;border:1px solid ${config.primary_color}33">
+          <span class="text-2xl">✨</span>
+          <span class="font-black text-xl" style="color:${config.primary_color}">+${quizState.xpEarned} XP</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <button onclick="startQuiz('${currentChapter.id}')" class="py-3 rounded-xl font-bold transition hover:scale-105 border-2" style="border-color:${config.accent_color};color:${config.accent_color}">
+            🔄 Làm lại
+          </button>
+          <button onclick="currentView='chapters';render()" class="py-3 rounded-xl font-bold text-white transition hover:scale-105" style="background:${config.primary_color}">
+            📚 Chương khác
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ========== PROFILE ==========
+function renderProfile(app) {
+  if (!playerData) { currentView = 'home'; render(); return; }
+  const xp = playerData.total_xp || 0;
+  const lvl = getLevel(xp);
+  const completed = getCompletedChapters();
+
+  app.innerHTML = `
+    <div class="min-h-full p-4 md:p-8">
+      <header class="flex items-center justify-between mb-6">
+        <button onclick="currentView='home';render()" class="p-2 rounded-xl hover:opacity-70"><i data-lucide="arrow-left" class="w-6 h-6"></i></button>
+        <h2 class="text-xl font-black" style="font-family:'Fredoka One',cursive;color:${config.primary_color}">Hồ sơ</h2>
+        <div class="w-10"></div>
+      </header>
+
+      <div class="max-w-lg mx-auto slide-up">
+        <!-- Avatar Card -->
+        <div class="rounded-2xl p-6 text-center mb-6" style="background:${config.surface_color}">
+          <div class="text-6xl mb-3">${RANKS[lvl].split(' ')[0]}</div>
+          <h3 class="text-2xl font-black">${playerData.player_name}</h3>
+          <p class="opacity-60 text-sm">${RANKS[lvl]}</p>
+
+          <div class="mt-4">
+            <div class="flex justify-between text-sm mb-1">
+              <span>Level ${lvl}</span>
+              <span class="opacity-60">${lvl < LEVELS.length - 1 ? `${LEVELS[lvl+1] - xp} XP đến Level ${lvl+1}` : 'MAX'}</span>
+            </div>
+            <div class="rounded-full h-4 overflow-hidden" style="background:${config.background_color}">
+              <div class="h-full rounded-full progress-fill" style="width:${getXpProgress(xp)}%;background:linear-gradient(90deg,${config.primary_color},${config.accent_color})"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-2 gap-3 mb-6">
+          ${[
+            { icon: '✨', label: 'Tổng XP', val: xp },
+            { icon: '📚', label: 'Chương hoàn thành', val: `${completed.length}/${CHAPTERS.length}` },
+            { icon: '🏆', label: 'Điểm cao nhất', val: playerData.high_score || 0 },
+            { icon: '🔥', label: 'Streak', val: playerData.streak || 0 },
+          ].map(s => `
+            <div class="rounded-xl p-4 text-center" style="background:${config.surface_color}">
+              <div class="text-2xl mb-1">${s.icon}</div>
+              <div class="font-black text-xl" style="color:${config.primary_color}">${s.val}</div>
+              <div class="text-xs opacity-50">${s.label}</div>
+            </div>
+          `).join('')}
+        </div>
+
+        <!-- Achievements -->
+        <div class="rounded-2xl p-5" style="background:${config.surface_color}">
+          <h4 class="font-black mb-3">🏅 Cấp bậc</h4>
+          <div class="space-y-2">
+            ${RANKS.map((r, i) => `
+              <div class="flex items-center gap-3 py-2 ${i <= lvl ? '' : 'opacity-30'}">
+                <span class="text-xl">${r.split(' ')[0]}</span>
+                <span class="text-sm font-bold flex-1">${r.split(' ').slice(1).join(' ')}</span>
+                <span class="text-xs opacity-50">${LEVELS[i]} XP</span>
+                ${i <= lvl ? '<span class="text-green-400 text-xs">✅</span>' : ''}
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ========== SDK INIT ==========
+const dataHandler = {
+  onDataChanged(data) {
+    allRecords = data;
+    // Use first record as player
+    playerData = data.length > 0 ? data[0] : null;
+    render();
+  }
+};
+
+(async () => {
+  await window.dataSdk.init(dataHandler);
+
+  window.elementSdk.init({
+    defaultConfig,
+    onConfigChange: async (cfg) => {
+      config = { ...defaultConfig, ...cfg };
+      render();
+    },
+    mapToCapabilities: (cfg) => ({
+      recolorables: [
+        { get: () => cfg.background_color || defaultConfig.background_color, set: v => { cfg.background_color = v; window.elementSdk.setConfig({ background_color: v }); } },
+        { get: () => cfg.surface_color || defaultConfig.surface_color, set: v => { cfg.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); } },
+        { get: () => cfg.text_color || defaultConfig.text_color, set: v => { cfg.text_color = v; window.elementSdk.setConfig({ text_color: v }); } },
+        { get: () => cfg.primary_color || defaultConfig.primary_color, set: v => { cfg.primary_color = v; window.elementSdk.setConfig({ primary_color: v }); } },
+        { get: () => cfg.accent_color || defaultConfig.accent_color, set: v => { cfg.accent_color = v; window.elementSdk.setConfig({ accent_color: v }); } },
+      ],
+      borderables: [],
+      fontEditable: {
+        get: () => cfg.font_family || defaultConfig.font_family || 'Nunito',
+        set: v => { cfg.font_family = v; window.elementSdk.setConfig({ font_family: v }); }
+      },
+      fontSizeable: {
+        get: () => cfg.font_size || defaultConfig.font_size || 16,
+        set: v => { cfg.font_size = v; window.elementSdk.setConfig({ font_size: v }); }
+      }
+    }),
+    mapToEditPanelValues: (cfg) => new Map([
+      ['game_title', cfg.game_title || defaultConfig.game_title],
+      ['welcome_text', cfg.welcome_text || defaultConfig.welcome_text]
+    ])
+  });
+
+  render();
+})();
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9eb1539b70801483',t:'MTc3NTk4NzQyNC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
