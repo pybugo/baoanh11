@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KaceLord | Youtuber & Developer</title>
+    <title>KACELORD | Minecraft Creator & Developer</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800;900&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <!-- Imported 'Mrs Saint Delafield' for an ultra-realistic, fluid ink script signature -->
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800;900&family=Mrs+Saint+Delafield&display=swap" rel="stylesheet">
     
     <script>
         tailwind.config = {
@@ -24,7 +25,7 @@
                     fontFamily: {
                         'gaming': ['Bebas Neue', 'sans-serif'],
                         'ui': ['Inter', 'sans-serif'],
-                        'signature': ['Dancing Script', 'cursive'],
+                        'signature': ['Mrs Saint Delafield', 'cursive'],
                     }
                 }
             }
@@ -33,7 +34,17 @@
     <style>
         /* GLOBAL SETTINGS */
         html { scroll-behavior: smooth; cursor: none; }
-        body { background-color: #050505; color: #ffffff; overflow-x: hidden; }
+        
+        /* Unified modern black grid background for the body */
+        body {
+            color: #ffffff;
+            overflow-x: hidden;
+            background-color: #050505;
+            background-size: 3rem 3rem;
+            background-image: 
+                linear-gradient(to right, rgba(39, 39, 42, 0.25) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(39, 39, 42, 0.25) 1px, transparent 1px);
+        }
 
         /* CUSTOM CURSOR */
         #cursor-dot {
@@ -47,27 +58,28 @@
             transform: translate(-50%, -50%); transition: 0.1s ease-out;
         }
 
-        /* FIXED BACKGROUND SYSTEM (UNIFIED THEME) */
-        .global-bg {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
+        /* HERO BACKGROUND (Set dynamically via JS for rotation) */
+        #hero {
+            background-size: cover;
+            background-position: center;
+            background-attachment: scroll;
+            position: relative;
         }
-        .global-bg img {
-            width: 100%; height: 100%; object-fit: cover; opacity: 0.85;
-            animation: breathe 20s ease-in-out infinite alternate;
-        }
-        .global-bg-overlay {
+        /* Custom Intense Dark Blur Overlay */
+        #hero-overlay {
             position: absolute; inset: 0;
-            background: linear-gradient(to bottom, rgba(5,5,5,0.3) 0%, rgba(5,5,5,0.75) 50%, rgba(5,5,5,0.95) 100%);
+            background: linear-gradient(to bottom, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.9) 70%, rgba(5,5,5,1) 100%);
             backdrop-filter: blur(3px);
+            z-index: 1;
         }
-        @keyframes breathe {
-            0% { transform: scale(1); }
-            100% { transform: scale(1.05); }
-        }
+
+        #hero .text-center { z-index: 10; position: relative; }
 
         /* SCROLL REVEAL */
         .reveal { opacity: 0; transform: translateY(50px) scale(0.95); transition: all 0.8s cubic-bezier(0.5, 0, 0, 1); }
         .reveal.active { opacity: 1; transform: translateY(0) scale(1); }
+        .reveal-left { opacity: 0; transform: translateX(-40px); transition: all 0.8s cubic-bezier(0.5, 0, 0, 1); }
+        .reveal-left.active { opacity: 1; transform: translateX(0); }
 
         /* LOADING INTRO */
         #loader { z-index: 99999; transition: all 0.8s cubic-bezier(0.77, 0, 0.175, 1); background: #050505; }
@@ -85,7 +97,7 @@
             box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
             transform-style: preserve-3d; transform: perspective(1000px);
         }
-        .glass-content { transform: translateZ(30px); } /* Pops content out during tilt */
+        .glass-content { transform: translateZ(30px); }
         
         .animated-border {
             position: relative; overflow: hidden;
@@ -125,6 +137,10 @@
         }
 
         /* TIMELINE PULSE */
+        .timeline-line {
+            position: absolute; left: 11px; top: 24px; bottom: -24px; width: 1px;
+            background: linear-gradient(to bottom, #9d4edd, #ff007f); opacity: 0.5;
+        }
         .timeline-node { animation: pulseNode 2s infinite; }
         @keyframes pulseNode {
             0% { box-shadow: 0 0 0 0 rgba(157,78,221,0.7); }
@@ -136,39 +152,40 @@
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #050505; }
         ::-webkit-scrollbar-thumb { background: #00f5d4; border-radius: 10px; }
+        .chat-scroll::-webkit-scrollbar { width: 4px; }
+        .chat-scroll::-webkit-scrollbar-thumb { background: #2a2a35; border-radius: 2px; }
     </style>
 </head>
 <body class="font-ui antialiased">
 
+    <!-- CUSTOM CURSOR -->
     <div id="cursor-dot" class="hidden md:block"></div>
     <div id="cursor-ring" class="hidden md:block"></div>
 
-    <div class="global-bg">
-        <img src="https://msftstories.thesourcemediaassets.com/sites/427/2022/08/MINECRAFT_ED_IECL2022_0803-scaled.jpg" alt="Minecraft Esports Stage Background">
-        <div class="global-bg-overlay"></div>
-    </div>
-
+    <!-- LOADING SCREEN -->
     <div id="loader" class="fixed inset-0 flex flex-col items-center justify-center">
         <p class="text-neon-cyan font-ui tracking-[0.6em] text-[10px] font-bold mb-6 animate-pulse uppercase">Initializing World Generation_</p>
-        <h1 class="font-gaming text-7xl md:text-9xl glitch-brand tracking-wider">KaceLord</h1>
-        <div class="font-signature text-5xl md:text-6xl text-neon-pink opacity-0 transition-opacity duration-700 delay-500 mt-2" id="loader-sig">Kace</div>
+        <h1 class="font-gaming text-7xl md:text-9xl glitch-brand tracking-wider">KACELORD</h1>
+        <div class="font-signature text-6xl md:text-7xl text-neon-pink opacity-0 transition-opacity duration-700 delay-500 mt-2" id="loader-sig">Kace</div>
         <div class="w-72 h-[2px] bg-white/10 mt-10 relative overflow-hidden rounded-full">
             <div id="progress-bar" class="absolute h-full left-0 top-0 bg-gradient-to-r from-neon-cyan via-neon-purple to-neon-pink w-0 transition-all duration-[1500ms] ease-out"></div>
         </div>
     </div>
 
-    <div class="fixed pointer-events-none select-none font-signature text-[12rem] md:text-[24rem] bottom-0 right-[-5%] rotate-[-10deg] opacity-5 text-white mix-blend-overlay">Kace</div>
+    <!-- FLOATING WATERMARKS -->
+    <div class="fixed pointer-events-none select-none font-signature text-[14rem] md:text-[26rem] bottom-0 right-[-5%] rotate-[-10deg] opacity-5 text-white mix-blend-overlay">Kace</div>
 
+    <!-- NAVBAR -->
     <nav class="fixed w-full z-50 top-0 border-b border-white/5 bg-black/40 backdrop-blur-xl transition-all duration-300" id="navbar">
         <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
             <a href="#" class="flex items-center gap-4 group">
                 <div class="w-10 h-10 rounded-lg overflow-hidden border-2 border-neon-cyan/50 shadow-[0_0_15px_rgba(0,245,212,0.4)] shrink-0 relative">
-                    <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=2070&auto=format&fit=crop" alt="Logo" class="w-full h-full object-cover">
+                    <img src="https://yt3.googleusercontent.com/uLGXHbTnvR33_yKsC5xWr2hB4B5duod_Oo9Jgq23rF_XGRe-vZ4PwoBlCM_4dr4j6HJCW3l_Yg=s3840-c-k-c0x00ffffff-no-rj" alt="Kacelord Logo" class="w-full h-full object-cover">
                     <div class="absolute inset-0 bg-neon-cyan/20 group-hover:bg-transparent transition-colors"></div>
                 </div>
                 <div>
-                    <h1 class="font-gaming text-2xl tracking-wider leading-none mt-1 group-hover:text-neon-cyan transition-colors">KaceLord</h1>
-                    <div class="font-signature text-lg text-neon-cyan leading-none -mt-1 group-hover:text-neon-pink transition-colors drop-shadow-md">Kace</div>
+                    <h1 class="font-gaming text-2xl tracking-wider leading-none mt-1 group-hover:text-neon-cyan transition-colors">KACELORD</h1>
+                    <div class="font-signature text-2xl text-neon-cyan leading-none -mt-2 group-hover:text-neon-pink transition-colors drop-shadow-md">Kace</div>
                 </div>
             </a>
 
@@ -185,20 +202,24 @@
         </div>
     </nav>
 
+    <!-- HERO SECTION (Background handled cleanly by structural logic script) -->
     <section id="hero" class="relative min-h-screen flex items-center justify-center pt-20 z-10">
+        <div id="hero-overlay"></div>
+        
         <div class="text-center px-6 max-w-6xl mx-auto reveal">
-            <div class="inline-flex items-center gap-3 border border-white/20 bg-black/40 rounded-full px-5 py-2 backdrop-blur-xl mb-8 shadow-2xl">
+            <!-- Pill item wrapper with 'Esports & Minecraft Content Creator' removed successfully -->
+            <div class="inline-flex items-center gap-3 border border-white/20 bg-black/40 rounded-full px-4 py-2 backdrop-blur-xl mb-8 shadow-2xl">
                 <div class="w-2 h-2 bg-neon-cyan rounded-full animate-ping"></div>
                 <p class="font-ui text-[10px] font-black tracking-[0.25em] text-white uppercase">
-                    Tricker & Minecraft Content Creator
+                    EMPIRE MISSION STATUS: ACTIVE
                 </p>
             </div>
             
             <h1 class="font-gaming text-8xl sm:text-9xl md:text-[12rem] leading-none mb-2 tracking-wider text-white drop-shadow-[0_10px_30px_rgba(0,0,0,0.8)]" style="-webkit-text-stroke: 2px rgba(255,255,255,0.1);">
-                KaceLord
+                KACELORD
             </h1>
             <h2 class="font-gaming text-4xl sm:text-6xl md:text-7xl leading-none mb-10 text-transparent bg-clip-text bg-gradient-to-r from-neon-cyan via-neon-purple to-neon-pink tracking-widest drop-shadow-2xl">
-                A BASIC YOUTUBER
+                BUILDING THE EMPIRE
             </h2>
             
             <p class="font-ui text-gray-300 text-sm md:text-lg max-w-3xl mx-auto mb-12 font-medium leading-relaxed drop-shadow-md">
@@ -211,17 +232,19 @@
         </div>
     </section>
 
-    <section class="relative z-20 px-6 pb-24 reveal -mt-10">
+    <!-- PROFILE STATS DASHBOARD -->
+    <section id="stats" class="relative z-20 px-6 py-24 reveal">
         <div class="max-w-6xl mx-auto">
             <div class="animated-border rounded-[2rem] p-1 shadow-[0_20px_50px_rgba(0,0,0,0.5)] tilt-element">
                 <div class="glass-card !border-none rounded-[1.9rem] p-8 md:p-12 flex flex-col lg:flex-row items-center justify-between gap-12 bg-black/60 relative overflow-hidden">
                     
                     <div class="absolute inset-0 opacity-10 bg-[linear-gradient(to_right,#fff_1px,transparent_1px),linear-gradient(to_bottom,#fff_1px,transparent_1px)] bg-[size:4rem_4rem] pointer-events-none"></div>
 
+                    <!-- Left Profile Box -->
                     <div class="flex flex-col md:flex-row items-center gap-8 glass-content w-full lg:w-auto">
                         <div class="relative w-36 h-36 shrink-0 group">
                             <div class="avatar-ring"></div>
-                            <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1964&auto=format&fit=crop" alt="Profile" class="w-full h-full rounded-full object-cover border-4 border-[#0c0c11] relative z-10 transition-transform duration-500 group-hover:scale-105">
+                            <img src="https://yt3.googleusercontent.com/uLGXHbTnvR33_yKsC5xWr2hB4B5duod_Oo9Jgq23rF_XGRe-vZ4PwoBlCM_4dr4j6HJCW3l_Yg=s3840-c-k-c0x00ffffff-no-rj" alt="Profile" class="w-full h-full rounded-full object-cover border-4 border-[#0c0c11] relative z-10 transition-transform duration-500 group-hover:scale-105">
                             <div class="absolute bottom-2 right-2 w-7 h-7 bg-green-500 border-4 border-[#0c0c11] rounded-full z-20 shadow-[0_0_15px_rgba(34,197,94,0.8)] flex items-center justify-center">
                                 <div class="w-2 h-2 bg-white rounded-full animate-pulse"></div>
                             </div>
@@ -229,12 +252,12 @@
                         
                         <div class="text-center md:text-left">
                             <div class="flex items-center justify-center md:justify-start gap-3 mb-1">
-                                <h3 class="font-gaming text-4xl text-white tracking-wide">KaceLordh3>
+                                <h3 class="font-gaming text-4xl text-white tracking-wide">KACELORD</h3>
                                 <div class="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-500 text-xs border border-blue-500/50 shadow-[0_0_10px_rgba(59,130,246,0.5)]">
                                     <i class="fa-solid fa-check"></i>
                                 </div>
                             </div>
-                            <p class="font-ui text-xs font-black text-neon-cyan tracking-widest mb-3 uppercase">@kacelord</p>
+                            <p class="font-ui text-xs font-black text-neon-cyan tracking-widest mb-3 uppercase">@kacelord.dev</p>
                             <div class="inline-flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-3 py-1.5 backdrop-blur-sm">
                                 <span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
                                 <span class="font-ui text-[9px] font-bold text-gray-300 uppercase tracking-widest">Online in Discord</span>
@@ -242,8 +265,8 @@
                         </div>
                     </div>
                     
+                    <!-- Right metrics -->
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 w-full lg:w-3/5 glass-content">
-                        
                         <div class="bg-gradient-to-b from-white/10 to-transparent border border-white/10 rounded-2xl p-5 text-center md:text-left relative overflow-hidden group hover:border-neon-cyan transition-colors">
                             <div class="absolute -right-4 -bottom-4 text-6xl text-white/[0.02] group-hover:text-neon-cyan/10 transition-colors"><i class="fa-solid fa-users"></i></div>
                             <p class="font-ui text-[9px] text-gray-400 font-black uppercase tracking-[0.2em] mb-2">Subscribers</p>
@@ -263,7 +286,7 @@
                         <div class="bg-gradient-to-b from-white/10 to-transparent border border-white/10 rounded-2xl p-5 text-center md:text-left relative overflow-hidden group hover:border-neon-pink transition-colors">
                             <div class="absolute -right-4 -bottom-4 text-6xl text-white/[0.02] group-hover:text-neon-pink/10 transition-colors"><i class="fa-solid fa-trophy"></i></div>
                             <p class="font-ui text-[9px] text-gray-400 font-black uppercase tracking-[0.2em] mb-2">MC Rank</p>
-                            <p class="font-gaming text-3xl text-neon-pink tracking-wider mt-1 text-glow-pink">MVP+</p>
+                            <p class="font-gaming text-3xl text-neon-pink tracking-wider mt-1 text-glow-pink">Diamond</p>
                         </div>
 
                         <div class="bg-gradient-to-b from-white/10 to-transparent border border-white/10 rounded-2xl p-5 text-center md:text-left relative overflow-hidden group hover:border-blue-500 transition-colors">
@@ -280,6 +303,7 @@
         </div>
     </section>
 
+    <!-- ABOUT & TIMELINE -->
     <section id="about" class="py-24 relative z-20">
         <div class="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-16">
             
@@ -304,10 +328,11 @@
 
                 <div>
                     <p class="font-ui text-[10px] text-gray-500 uppercase tracking-[0.2em] font-bold mb-2">Creator Signature</p>
-                    <div class="font-signature text-6xl text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.4)]">Kace</div>
+                    <div class="font-signature text-7xl text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.4)]">Kace</div>
                 </div>
             </div>
 
+            <!-- Enhanced Timeline -->
             <div class="relative pl-8 md:pl-12 pt-10 reveal">
                 <div class="absolute left-[11px] md:left-[27px] top-12 bottom-0 w-[2px] bg-gradient-to-b from-neon-purple via-neon-pink to-transparent opacity-40"></div>
 
@@ -315,7 +340,7 @@
                     <div class="absolute -left-[29px] md:-left-[45px] top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-neon-purple border-4 border-[#0c0c11] box-content timeline-node"></div>
                     <p class="font-ui text-neon-purple text-[10px] font-black tracking-widest uppercase mb-2 bg-neon-purple/10 inline-block px-2 py-1 rounded">May 2026 (Goal)</p>
                     <h4 class="font-ui font-black text-xl text-white mb-3">High School Entrance & VIP 8</h4>
-                    <p class="font-ui text-sm text-gray-400">Targeting admission to Chuyên Tin and finally copping that VIP 8 Free Fire / Diamond MC rank with saved up funds.</p>
+                    <p class="font-ui text-sm text-gray-400">Targeting admission to Cấp 3 Chuyên Tin and finally copping that VIP 8 Free Fire / Diamond MC rank with saved up funds.</p>
                 </div>
 
                 <div class="glass-card p-6 md:p-8 rounded-2xl relative transition-all tilt-element bg-black/50 hover:!border-neon-pink">
@@ -328,6 +353,7 @@
         </div>
     </section>
 
+    <!-- PREMIUM VIDEOS SECTION -->
     <section id="videos" class="py-24 relative z-20">
         <div class="max-w-7xl mx-auto px-6">
             <div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6 reveal">
@@ -341,62 +367,65 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <a href="https://youtube.com/watch?v=YOUR_VIDEO_ID_1" target="_blank" class="glass-card rounded-2xl overflow-hidden cursor-pointer group reveal bg-black/60 tilt-element" style="transition-delay: 100ms;">
+                <!-- Video 1 -->
+                <a href="https://youtu.be/PKXu9li7spY?si=QmyM465Kt3sQ9CKM" target="_blank" class="glass-card rounded-2xl overflow-hidden cursor-pointer group reveal bg-black/60 tilt-element" style="transition-delay: 100ms;">
                     <div class="relative h-56 overflow-hidden bg-black">
-                        <img src="https://images.unsplash.com/photo-1629429408209-1f912961bc18?q=80&w=2070&auto=format&fit=crop" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-80" alt="Video 1">
+                        <img src="https://i.ytimg.com/vi/PKXu9li7spY/maxresdefault.jpg" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-80" alt="Video 1">
                         <div class="absolute inset-0 bg-black/30 flex items-center justify-center group-hover:bg-black/10 transition-colors">
                             <div class="w-14 h-14 rounded-full bg-white/10 border-2 border-neon-cyan text-neon-cyan flex items-center justify-center text-xl group-hover:bg-neon-cyan group-hover:text-black group-hover:scale-125 transition-all duration-300 backdrop-blur-md shadow-[0_0_20px_rgba(0,245,212,0.5)]">
                                 <i class="fa-solid fa-play ml-1"></i>
                             </div>
                         </div>
-                        <span class="absolute bottom-3 right-3 bg-black/90 font-ui text-[10px] font-black px-2 py-1 rounded border border-white/20">14:20</span>
+                        <span class="absolute bottom-3 right-3 bg-black/90 font-ui text-[10px] font-black px-2 py-1 rounded border border-white/20">05:58</span>
                     </div>
                     <div class="p-6">
-                        <p class="text-neon-cyan text-[10px] font-black tracking-widest mb-3 uppercase">1.5K Views • 2 Weeks Ago</p>
-                        <h3 class="font-ui font-black text-base leading-snug mb-4 text-white group-hover:text-neon-cyan transition-colors line-clamp-2">SURVIVING 100 DAYS IN HARDCORE MINECRAFT (ALMOST DIED)</h3>
+                        <p class="text-neon-cyan text-[10px] font-black tracking-widest mb-3 uppercase">1.7K Views • June 2025</p>
+                        <h3 class="font-ui font-black text-base leading-snug mb-4 text-white group-hover:text-neon-cyan transition-colors line-clamp-2">Top 3 BEST Bedwars Texture Packs (1.8.9) | FPS Boost</h3>
                         <div class="flex items-center gap-3 pt-4 border-t border-white/10">
-                            <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1964&auto=format&fit=crop" class="w-6 h-6 rounded-full object-cover border border-neon-cyan/50">
-                            <span class="text-[10px] text-gray-300 font-bold uppercase tracking-wider">KaceLord</span>
+                            <img src="https://yt3.googleusercontent.com/uLGXHbTnvR33_yKsC5xWr2hB4B5duod_Oo9Jgq23rF_XGRe-vZ4PwoBlCM_4dr4j6HJCW3l_Yg=s3840-c-k-c0x00ffffff-no-rj" class="w-6 h-6 rounded-full object-cover border border-neon-cyan/50">
+                            <span class="text-[10px] text-gray-300 font-bold uppercase tracking-wider">KACELORD</span>
                         </div>
                     </div>
                 </a>
 
-                <a href="https://youtube.com/watch?v=YOUR_VIDEO_ID_2" target="_blank" class="glass-card rounded-2xl overflow-hidden cursor-pointer group reveal bg-black/60 tilt-element" style="transition-delay: 200ms;">
+                <!-- Video 2 (Link modified dynamically to exact target configuration requirement) -->
+                <a href="https://www.youtube.com/watch?v=uBcE7cuE7-M" target="_blank" class="glass-card rounded-2xl overflow-hidden cursor-pointer group reveal bg-black/60 tilt-element" style="transition-delay: 200ms;">
                     <div class="relative h-56 overflow-hidden bg-black">
-                        <img src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=2070&auto=format&fit=crop" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-80" alt="Video 2">
+                        <img src="https://i.ytimg.com/vi/uBcE7cuE7-M/maxresdefault.jpg" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-80" alt="Video 2">
                         <div class="absolute inset-0 bg-black/30 flex items-center justify-center group-hover:bg-black/10 transition-colors">
                             <div class="w-14 h-14 rounded-full bg-white/10 border-2 border-neon-purple text-neon-purple flex items-center justify-center text-xl group-hover:bg-neon-purple group-hover:text-white group-hover:scale-125 transition-all duration-300 backdrop-blur-md shadow-[0_0_20px_rgba(157,78,221,0.5)]">
                                 <i class="fa-solid fa-play ml-1"></i>
                             </div>
                         </div>
-                        <span class="absolute bottom-3 right-3 bg-black/90 font-ui text-[10px] font-black px-2 py-1 rounded border border-white/20">08:45</span>
+                        <span class="absolute bottom-3 right-3 bg-black/90 font-ui text-[10px] font-black px-2 py-1 rounded border border-white/20">03:05</span>
                     </div>
                     <div class="p-6">
-                        <p class="text-neon-purple text-[10px] font-black tracking-widest mb-3 uppercase">850 Views • 1 Month Ago</p>
-                        <h3 class="font-ui font-black text-base leading-snug mb-4 text-white group-hover:text-neon-purple transition-colors line-clamp-2">BEDWARS CLUTCH MOMENTS: WINNING WITH 1 HP! 🔥</h3>
+                        <p class="text-neon-purple text-[10px] font-black tracking-widest mb-3 uppercase">461 Views • June 2025</p>
+                        <h3 class="font-ui font-black text-base leading-snug mb-4 text-white group-hover:text-neon-purple transition-colors line-clamp-2">Reviews Pack Anti Cali Cực Mank 🇻🇳 (1.8.9) | FPS Boost</h3>
                         <div class="flex items-center gap-3 pt-4 border-t border-white/10">
-                            <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1964&auto=format&fit=crop" class="w-6 h-6 rounded-full object-cover border border-neon-purple/50">
-                            <span class="text-[10px] text-gray-300 font-bold uppercase tracking-wider">KaceLord</span>
+                            <img src="https://yt3.googleusercontent.com/uLGXHbTnvR33_yKsC5xWr2hB4B5duod_Oo9Jgq23rF_XGRe-vZ4PwoBlCM_4dr4j6HJCW3l_Yg=s3840-c-k-c0x00ffffff-no-rj" class="w-6 h-6 rounded-full object-cover border border-neon-purple/50">
+                            <span class="text-[10px] text-gray-300 font-bold uppercase tracking-wider">KACELORD</span>
                         </div>
                     </div>
                 </a>
 
-                <a href="https://youtube.com/watch?v=YOUR_VIDEO_ID_3" target="_blank" class="glass-card rounded-2xl overflow-hidden cursor-pointer group reveal bg-black/60 tilt-element" style="transition-delay: 300ms;">
+                <!-- Video 3 -->
+                <a href="https://youtu.be/2-G6g_0tKX0?si=UQGI4sL7uQ7y5i_i" target="_blank" class="glass-card rounded-2xl overflow-hidden cursor-pointer group reveal bg-black/60 tilt-element" style="transition-delay: 300ms;">
                     <div class="relative h-56 overflow-hidden bg-black">
-                        <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=2070&auto=format&fit=crop" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-80" alt="Video 3">
+                        <img src="https://i.ytimg.com/vi/2-G6g_0tKX0/maxresdefault.jpg" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-80" alt="Video 3">
                         <div class="absolute inset-0 bg-black/30 flex items-center justify-center group-hover:bg-black/10 transition-colors">
                             <div class="w-14 h-14 rounded-full bg-white/10 border-2 border-neon-pink text-neon-pink flex items-center justify-center text-xl group-hover:bg-neon-pink group-hover:text-white group-hover:scale-125 transition-all duration-300 backdrop-blur-md shadow-[0_0_20px_rgba(255,0,127,0.5)]">
                                 <i class="fa-solid fa-play ml-1"></i>
                             </div>
                         </div>
-                        <span class="absolute bottom-3 right-3 bg-black/90 font-ui text-[10px] font-black px-2 py-1 rounded border border-white/20">11:15</span>
+                        <span class="absolute bottom-3 right-3 bg-black/90 font-ui text-[10px] font-black px-2 py-1 rounded border border-white/20">04:02</span>
                     </div>
                     <div class="p-6">
-                        <p class="text-neon-pink text-[10px] font-black tracking-widest mb-3 uppercase">420 Views • 2 Months Ago</p>
-                        <h3 class="font-ui font-black text-base leading-snug mb-4 text-white group-hover:text-neon-pink transition-colors line-clamp-2">CODING A DISCORD BOT IN PYTHON (EASY TUTORIAL)</h3>
+                        <p class="text-neon-pink text-[10px] font-black tracking-widest mb-3 uppercase">1.1K Views • July 2025</p>
+                        <h3 class="font-ui font-black text-base leading-snug mb-4 text-white group-hover:text-neon-pink transition-colors line-clamp-2">Mình Đối Đầu Với Trùm Bedwars 3F - Và Giờ Mình Mới Biết Ai Ia Gà🐔</h3>
                         <div class="flex items-center gap-3 pt-4 border-t border-white/10">
-                            <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1964&auto=format&fit=crop" class="w-6 h-6 rounded-full object-cover border border-neon-pink/50">
-                            <span class="text-[10px] text-gray-300 font-bold uppercase tracking-wider">KaceLord</span>
+                            <img src="https://yt3.googleusercontent.com/uLGXHbTnvR33_yKsC5xWr2hB4B5duod_Oo9Jgq23rF_XGRe-vZ4PwoBlCM_4dr4j6HJCW3l_Yg=s3840-c-k-c0x00ffffff-no-rj" class="w-6 h-6 rounded-full object-cover border border-neon-pink/50">
+                            <span class="text-[10px] text-gray-300 font-bold uppercase tracking-wider">KACELORD</span>
                         </div>
                     </div>
                 </a>
@@ -404,6 +433,7 @@
         </div>
     </section>
 
+    <!-- HOLOGRAPHIC DONATE SECTION WITH LASERS -->
     <section id="donate" class="py-24 relative z-20">
         <div class="max-w-6xl mx-auto px-6 text-center reveal">
             <h2 class="font-gaming text-5xl mb-4 tracking-wide text-white drop-shadow-lg">SUPPORT THE <span class="text-transparent bg-clip-text bg-gradient-to-r from-neon-cyan to-blue-500">DREAM</span></h2>
@@ -411,6 +441,7 @@
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
                 
+                <!-- PlayerDuo QR -->
                 <div class="glass-card p-8 rounded-3xl flex flex-col items-center hover:!border-blue-500 transition-all bg-black/60 group tilt-element">
                     <div class="flex flex-col items-center gap-2 mb-6 glass-content">
                         <div class="w-14 h-14 bg-blue-500/20 text-blue-500 rounded-full flex items-center justify-center text-2xl border border-blue-500/50 shadow-[0_0_15px_rgba(59,130,246,0.3)]"><i class="fa-solid fa-gamepad"></i></div>
@@ -425,6 +456,7 @@
                     <p class="font-ui text-xs text-gray-400 font-medium glass-content">Scan or <a href="#" target="_blank" class="text-blue-400 font-bold hover:text-white transition-colors">click here</a> to trigger an alert on stream.</p>
                 </div>
                 
+                <!-- MoMo QR -->
                 <div class="glass-card p-8 rounded-3xl flex flex-col items-center hover:!border-pink-500 transition-all bg-black/60 group tilt-element relative transform md:-translate-y-4">
                     <div class="absolute -top-4 bg-gradient-to-r from-pink-600 to-neon-pink text-white text-[10px] font-black px-5 py-1.5 rounded-full uppercase tracking-widest shadow-[0_0_20px_rgba(255,0,127,0.5)] z-10">Most Popular</div>
                     <div class="flex flex-col items-center gap-2 mb-6 glass-content">
@@ -443,6 +475,7 @@
                     </div>
                 </div>
 
+                <!-- Bank QR -->
                 <div class="glass-card p-8 rounded-3xl flex flex-col items-center hover:!border-neon-cyan transition-all bg-black/60 group tilt-element">
                     <div class="flex flex-col items-center gap-2 mb-6 glass-content">
                         <div class="w-14 h-14 bg-neon-cyan/20 text-neon-cyan rounded-full flex items-center justify-center text-2xl border border-neon-cyan/50 shadow-[0_0_15px_rgba(0,245,212,0.3)]"><i class="fa-solid fa-building-columns"></i></div>
@@ -464,10 +497,11 @@
         </div>
     </section>
 
+    <!-- FOOTER -->
     <footer class="py-16 relative z-20 border-t border-white/10 bg-black/80 backdrop-blur-md">
         <div class="max-w-7xl mx-auto px-6 flex flex-col items-center gap-6 text-center">
             <div class="font-signature text-5xl text-white transform -rotate-2 mb-2 tracking-wide drop-shadow-md">Kace</div>
-            <p class="font-ui text-gray-400 text-[10px] font-black tracking-[0.3em] uppercase">© 2026 KaceLord. ALL RIGHTS RESERVED.</p>
+            <p class="font-ui text-gray-400 text-[10px] font-black tracking-[0.3em] uppercase">© 2026 KACELORD. ALL RIGHTS RESERVED.</p>
             <div class="flex gap-6 mt-4">
                 <a href="#" class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-gray-300 hover:bg-neon-cyan hover:text-black hover:scale-110 transition-all text-lg"><i class="fa-brands fa-youtube"></i></a>
                 <a href="#" class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-gray-300 hover:bg-neon-purple hover:text-white hover:scale-110 transition-all text-lg"><i class="fa-brands fa-discord"></i></a>
@@ -476,6 +510,7 @@
         </div>
     </footer>
 
+    <!-- INTERACTIVE THEATER MODAL -->
     <div id="video-theater" class="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl hidden items-center justify-center p-4 md:p-10">
         <div class="glass-card w-full max-w-6xl rounded-3xl !border-white/20 overflow-hidden flex flex-col lg:flex-row h-[85vh] shadow-[0_0_50px_rgba(0,0,0,0.8)] relative bg-black/80">
             
@@ -483,8 +518,9 @@
                 <i class="fa-solid fa-xmark"></i>
             </button>
 
+            <!-- Video Player Simulation -->
             <div class="w-full lg:w-3/4 relative flex flex-col justify-between h-2/3 lg:h-full">
-                <div class="relative w-full flex-1" style="background-image: url('https://msftstories.thesourcemediaassets.com/sites/427/2022/08/MINECRAFT_ED_IECL2022_0803-scaled.jpg'); background-size: cover; background-position: center;">
+                <div class="relative w-full flex-1" id="modal-theater-bg" style="background-size: cover; background-position: center;">
                     <div class="absolute inset-0 bg-black/40 backdrop-blur-[2px]"></div>
                     
                     <div class="absolute top-6 left-6 bg-red-600 text-white text-[10px] font-black px-3 py-1.5 rounded flex items-center gap-2 shadow-lg tracking-widest">
@@ -495,11 +531,12 @@
                         <div class="w-20 h-20 rounded-full bg-white/10 border-2 border-white text-white flex items-center justify-center text-3xl mb-6 hover:scale-110 hover:bg-neon-cyan hover:text-black hover:border-neon-cyan transition-all cursor-pointer shadow-[0_0_30px_rgba(255,255,255,0.2)]">
                             <i class="fa-solid fa-play ml-1"></i>
                         </div>
-                        <h4 class="font-ui font-black text-2xl md:text-3xl text-white max-w-2xl leading-tight drop-shadow-2xl">KaceLord BEDWARS LIVESTREAM GIAO LƯU FAN ESPORTS</h4>
+                        <h4 class="font-ui font-black text-2xl md:text-3xl text-white max-w-2xl leading-tight drop-shadow-2xl">KACELORD BEDWARS LIVESTREAM GIAO LƯU FAN ESPORTS</h4>
                     </div>
                 </div>
             </div>
 
+            <!-- CHAT -->
             <div class="w-full lg:w-1/4 border-t lg:border-t-0 lg:border-l border-white/10 flex flex-col h-1/3 lg:h-full bg-black/50">
                 <div class="p-4 border-b border-white/10 bg-black/40 flex items-center justify-between">
                     <span class="font-ui font-black text-[11px] tracking-widest text-white">TRÒ CHUYỆN TRỰC TIẾP</span>
@@ -509,7 +546,8 @@
                 </div>
                 
                 <div class="flex-1 overflow-y-auto p-5 space-y-4 font-ui text-xs chat-scroll" id="live-chat-box">
-                    </div>
+                    <!-- Chats go here -->
+                </div>
 
                 <div class="p-4 border-t border-white/10 bg-black/60 flex gap-3">
                     <input type="text" id="chat-input-field" placeholder="Chat với Kace..." class="flex-1 bg-black/50 border border-white/20 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-neon-cyan transition-colors shadow-inner">
@@ -519,7 +557,28 @@
         </div>
     </div>
 
+    <!-- SCRIPTS -->
     <script>
+        // BACKGROUND ROTATION SYSTEM SETUPS (Strict sequential switching per load)
+        const backgrounds = [
+            'https://i.pinimg.com/webp/1200x/41/ad/c9/41adc9d30ec273a6520cca8bf73303f9.webp',
+            'https://i.pinimg.com/webp/1200x/dc/0d/7c/dc0d7c8d228cbb4a8c119ccf6ecf51c2.webp',
+            'https://i.pinimg.com/1200x/e0/49/39/e049394d85dbd2074531ac054285acbe.jpg'
+        ];
+
+        let bgIndex = localStorage.getItem('kacelord_bg_index');
+        if (bgIndex === null) {
+            bgIndex = 0;
+        } else {
+            bgIndex = (parseInt(bgIndex) + 1) % backgrounds.length;
+        }
+        localStorage.setItem('kacelord_bg_index', bgIndex);
+        
+        // Inject current alternation selection image strictly to Hero UI elements
+        const selectedBg = backgrounds[bgIndex];
+        document.getElementById('hero').style.backgroundImage = `url('${selectedBg}')`;
+        document.getElementById('modal-theater-bg').style.backgroundImage = `url('${selectedBg}')`;
+
         // Custom Cursor Logic
         const dot = document.getElementById("cursor-dot");
         const ring = document.getElementById("cursor-ring");
@@ -549,9 +608,8 @@
                 const y = e.clientY - rect.top;
                 const centerX = rect.width / 2;
                 const centerY = rect.height / 2;
-                const rotateX = ((y - centerY) / centerY) * -10; // Max 10 deg
+                const rotateX = ((y - centerY) / centerY) * -10;
                 const rotateY = ((x - centerX) / centerX) * 10;
-                
                 el.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
             });
             el.addEventListener('mouseleave', () => {
@@ -681,7 +739,7 @@
             if(input.value.trim() !== '') {
                 const el = document.createElement('div');
                 el.className = 'bg-neon-cyan/20 p-3 rounded-xl border border-neon-cyan/40 shadow-sm';
-                el.innerHTML = `<span class="text-neon-cyan font-black mr-2">BẠN:</span> <span class="text-white font-medium">${input.value}</span>`;
+                el.innerHTML = `<span class="text-neon-cyan font-bold mr-2">BẠN:</span> <span class="text-white font-medium">${input.value}</span>`;
                 chatBox.appendChild(el);
                 input.value = '';
                 chatBox.scrollTop = chatBox.scrollHeight;
