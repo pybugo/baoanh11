@@ -740,5 +740,249 @@
             if(e.key === 'Enter') sendChat();
         });
     </script>
+<script>
+    // ==========================================
+    // ULTRA SECURITY SYSTEM - KaceLord
+    // ==========================================
+
+    // Disable Right Click
+    document.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+        showSecurityWarning();
+    });
+
+    // Disable DevTools Keys
+    document.addEventListener('keydown', function(e) {
+
+        // F12
+        if (e.key === 'F12') {
+            e.preventDefault();
+            showSecurityWarning();
+        }
+
+        // Ctrl+Shift+I
+        if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'i') {
+            e.preventDefault();
+            showSecurityWarning();
+        }
+
+        // Ctrl+Shift+J
+        if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'j') {
+            e.preventDefault();
+            showSecurityWarning();
+        }
+
+        // Ctrl+Shift+C
+        if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'c') {
+            e.preventDefault();
+            showSecurityWarning();
+        }
+
+        // Ctrl+U
+        if (e.ctrlKey && e.key.toLowerCase() === 'u') {
+            e.preventDefault();
+            showSecurityWarning();
+        }
+
+        // Ctrl+S
+        if (e.ctrlKey && e.key.toLowerCase() === 's') {
+            e.preventDefault();
+            showSecurityWarning();
+        }
+
+        // Ctrl+P
+        if (e.ctrlKey && e.key.toLowerCase() === 'p') {
+            e.preventDefault();
+            showSecurityWarning();
+        }
+    });
+
+    // Detect DevTools Open
+    let devtoolsOpened = false;
+
+    setInterval(() => {
+
+        const widthThreshold = window.outerWidth - window.innerWidth > 160;
+        const heightThreshold = window.outerHeight - window.innerHeight > 160;
+
+        if (widthThreshold || heightThreshold) {
+
+            if (!devtoolsOpened) {
+
+                devtoolsOpened = true;
+
+                document.body.innerHTML = `
+                    <div style="
+                        width:100vw;
+                        height:100vh;
+                        background:#050505;
+                        display:flex;
+                        align-items:center;
+                        justify-content:center;
+                        flex-direction:column;
+                        overflow:hidden;
+                        font-family:Inter,sans-serif;
+                        color:white;
+                        position:fixed;
+                        inset:0;
+                        z-index:999999999;
+                    ">
+
+                        <div style="
+                            position:absolute;
+                            inset:0;
+                            background:
+                            linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                            linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+                            background-size:40px 40px;
+                        "></div>
+
+                        <h1 style="
+                            font-size:90px;
+                            font-weight:900;
+                            margin-bottom:20px;
+                            color:#ff007f;
+                            text-shadow:0 0 40px #ff007f;
+                            letter-spacing:6px;
+                            z-index:2;
+                        ">
+                            ACCESS DENIED
+                        </h1>
+
+                        <p style="
+                            font-size:18px;
+                            color:#b3b3b3;
+                            text-align:center;
+                            line-height:2;
+                            max-width:800px;
+                            z-index:2;
+                        ">
+                            Unauthorized source inspection detected.<br>
+                            This website is protected by KaceLord Security System.<br>
+                            Developer tools are blocked.
+                        </p>
+
+                        <div style="
+                            margin-top:40px;
+                            padding:14px 30px;
+                            border:1px solid rgba(255,255,255,0.1);
+                            border-radius:16px;
+                            background:rgba(255,255,255,0.03);
+                            backdrop-filter:blur(10px);
+                            font-size:12px;
+                            letter-spacing:4px;
+                            color:#00f5d4;
+                            z-index:2;
+                        ">
+                            SECURITY ACTIVE
+                        </div>
+
+                    </div>
+                `;
+            }
+        }
+    }, 500);
+
+    // Console Trap
+    setInterval(() => {
+        console.clear();
+        console.log("%cSTOP!", "color:red;font-size:60px;font-weight:bold;");
+        console.log("%cThis website is protected by KaceLord.", "color:#00f5d4;font-size:18px;");
+    }, 1000);
+
+    // Security Popup
+    function showSecurityWarning() {
+
+        if(document.getElementById('security-popup')) return;
+
+        const popup = document.createElement('div');
+
+        popup.id = 'security-popup';
+
+        popup.innerHTML = `
+            <div style="
+                position:fixed;
+                inset:0;
+                background:rgba(0,0,0,0.75);
+                backdrop-filter:blur(8px);
+                z-index:999999999;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                padding:20px;
+            ">
+
+                <div style="
+                    width:100%;
+                    max-width:520px;
+                    background:#0c0c11;
+                    border:1px solid rgba(255,255,255,0.08);
+                    border-radius:28px;
+                    padding:40px;
+                    text-align:center;
+                    box-shadow:0 0 50px rgba(255,0,127,0.25);
+                    position:relative;
+                    overflow:hidden;
+                ">
+
+                    <div style="
+                        position:absolute;
+                        inset:0;
+                        background:
+                        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+                        background-size:30px 30px;
+                    "></div>
+
+                    <h2 style="
+                        font-size:42px;
+                        font-weight:900;
+                        color:#ff007f;
+                        margin-bottom:20px;
+                        text-shadow:0 0 20px #ff007f;
+                        position:relative;
+                        z-index:2;
+                    ">
+                        WARNING
+                    </h2>
+
+                    <p style="
+                        color:#d1d1d1;
+                        line-height:2;
+                        font-size:15px;
+                        position:relative;
+                        z-index:2;
+                    ">
+                        Unauthorized source inspection detected.<br>
+                        Developer tools & source viewing are blocked by KaceLord Security.
+                    </p>
+
+                    <button onclick="document.getElementById('security-popup').remove()"
+                        style="
+                            margin-top:30px;
+                            padding:14px 34px;
+                            border:none;
+                            border-radius:14px;
+                            background:#00f5d4;
+                            color:black;
+                            font-weight:900;
+                            cursor:pointer;
+                            font-size:13px;
+                            letter-spacing:2px;
+                            transition:0.3s;
+                            position:relative;
+                            z-index:2;
+                        ">
+                        CLOSE
+                    </button>
+
+                </div>
+
+            </div>
+        `;
+
+        document.body.appendChild(popup);
+    }
+</script>
 </body>
 </html>
